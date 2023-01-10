@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 // validate: [validator.isEmail, "please provide a valid email"],
 const userSchema = new mongoose.Schema({
   name: {
@@ -33,6 +34,15 @@ const userSchema = new mongoose.Schema({
     enum: ["admin", "superadmin", "user"],
     default: "user",
   },
+  passwordChangedAt: {
+    type: Date,
+  },
+  passwordResetToken: {
+    type: String,
+  },
+  passwordExpiredDate: {
+    type: Date,
+  },
 });
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
@@ -41,8 +51,16 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-2;
-3;
+userSchema.methods.passwordResetTokenGen = async () => {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  this.passwordExpiredDate = Date.now() + 10 * 60 * 1000;
+  console.log(this.passwordResetToken);
+  return resetToken;
+};
 
 userSchema.methods.correctPassword = async (canPass, userPass) => {
   return await bcrypt.compare(canPass, userPass);

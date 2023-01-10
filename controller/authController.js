@@ -11,6 +11,13 @@ const gentoken = (id) => {
 };
 exports.signup = async (req, res) => {
   try {
+    const check = await User.find({ email: req.body.email });
+
+    // if (check) {
+    //   res.status(400).json({
+    //     message: req.body.email + " already taken",
+    //   });
+    // }
     const newUser = await User.create(req.body);
 
     const token = jwt.sign({ id: newUser._id }, "secrete", {
@@ -94,4 +101,27 @@ exports.restricTo = (...role) => {
     }
     next();
   };
+};
+
+exports.forgetpassword = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+
+    if (!user) {
+      res.status(400).json({
+        message: "User not found !",
+      });
+    }
+    const passToken = await user.passwordResetTokenGen();
+    await user.save({ validateBeforeSave: false });
+    const fullUrl = req.protocol + "://" + req.get("host");
+    res.status(200).json({
+      token: passToken,
+      user: user,
+    });
+  } catch (error) {
+    res.status(400).json({
+      error: error,
+    });
+  }
 };
