@@ -3,6 +3,9 @@ const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 dotenv.config({ path: "config.env" });
 const bcrypt = require("bcrypt");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
+const { findOne } = require("../model/ProductModel");
 
 const gentoken = (id) => {
   return jwt.sign({ id: id }, "secrete", {
@@ -53,7 +56,7 @@ exports.login = async (req, res) => {
     }
 
     res.status(200).json({
-      status: "success",
+      status: "login success",
       token: token,
     });
   } catch (error) {
@@ -112,16 +115,88 @@ exports.forgetpassword = async (req, res) => {
         message: "User not found !",
       });
     }
-    const passToken = await user.passwordResetTokenGen();
+    const passToken = await user.passwordResetTokenGen(user);
     await user.save({ validateBeforeSave: false });
-    const fullUrl = req.protocol + "://" + req.get("host");
+
+    const transport = nodemailer.createTransport({
+      host: "smtp.mailtrap.io",
+      port: 2525,
+      auth: {
+        user: "1d419918c93f55",
+        pass: "c6feaabd48bad1",
+      },
+    });
+
+    const fullUrl =
+      req.protocol +
+      "://" +
+      req.get("host") +
+      "api/ecom/user/resetpasswordtoken/" +
+      passToken;
+
+    const url = ``;
+
+    const mailOptions = {
+      from: '"Example Team" <from@example.com>',
+      to: "user1@example.com, user2@example.com",
+      subject: "Nice Nodemailer test",
+      text: fullUrl,
+    };
+
+    transport.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return console.log(error);
+      }
+      console.log("Message sent: %s", info.messageId);
+    });
+
     res.status(200).json({
-      token: passToken,
+      token: fullUrl,
       user: user,
     });
   } catch (error) {
     res.status(400).json({
       error: error,
     });
+  }
+};
+
+exports.reserPassword = async (req, res) => {
+  const passwordToken = req.params.token;
+  console.log(passwordToken);
+  try {
+    const reqTokenCheck = crypto
+      .createHash("sha256")
+      .update(req.params.token)
+      .digest("hex");
+    console.log(reqTokenCheck);
+
+    const user = await User.findOne({
+      passwordResetToken: reqTokenCheck,
+    });
+    // passwordExpiredDate: { $gt: Date.now() }
+    if (!user) {
+      res.status(400).json({ message: "No user Exists" });
+    }
+    console.log(user);
+    user.password = req.body.password;
+    user.confirmpassword = req.body.confirmpassword;
+    user.passwordResetToken = undefined;
+    user.passwordExpiredDate = undefined;
+    user.passwordChangedAt = Date.now();
+
+    const updateUser = await user.save();
+
+    const token = gentoken(updateUser._id);
+
+    res.status(201).json({
+      message: "success",
+      token: token,
+      updateUser: {
+        updateUser,
+      },
+    });
+  } catch (error) {
+    res.status(401).json({ error: error });
   }
 };
