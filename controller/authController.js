@@ -1,28 +1,40 @@
-const User = require("./../model/User");
-const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 dotenv.config({ path: "config.env" });
+const User = require("./../model/User");
+const jwt = require("jsonwebtoken");
+
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const { findOne } = require("../model/ProductModel");
 
-const gentoken = (id) => {
-  return jwt.sign({ id: id }, "secrete", {
-    expiresIn: "100h",
+const gentoken = (id, user, res) => {
+  console.log("token");
+  const token = jwt.sign({ id: id }, "secrete", {
+    expiresIn: process.env.JWTEXP_IN,
+  });
+
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 + 1000
+    ),
+    httpOnly: true,
+  };
+
+  if (process.env.NODE_ENV === "productions") cookieOptions.secure = true;
+  res.cookie("jwtcookie", token, cookieOptions);
+
+  res.status(200).json({
+    token: token,
+    user: {
+      user,
+    },
   });
 };
 exports.signup = async (req, res) => {
   try {
     const check = await User.find({ email: req.body.email });
-
-    // if (check) {
-    //   res.status(400).json({
-    //     message: req.body.email + " already taken",
-    //   });
-    // }
     const newUser = await User.create(req.body);
-
     const token = jwt.sign({ id: newUser._id }, "secrete", {
       expiresIn: "100h",
     });
@@ -152,7 +164,6 @@ exports.forgetpassword = async (req, res) => {
 
     res.status(200).json({
       token: fullUrl,
-      user: user,
     });
   } catch (error) {
     res.status(400).json({
@@ -178,7 +189,7 @@ exports.reserPassword = async (req, res) => {
     if (!user) {
       res.status(400).json({ message: "No user Exists" });
     }
-    console.log(user);
+
     user.password = req.body.password;
     user.confirmpassword = req.body.confirmpassword;
     user.passwordResetToken = undefined;
@@ -187,16 +198,39 @@ exports.reserPassword = async (req, res) => {
 
     const updateUser = await user.save();
 
-    const token = gentoken(updateUser._id);
+    // const token = gentoken(updateUser._id);
+    const token = gentoken(updateUser._id, updateUser, res);
 
-    res.status(201).json({
-      message: "success",
-      token: token,
-      updateUser: {
-        updateUser,
-      },
-    });
+    // res.status(201).json({
+    //   message: "success",
+    //   token: token,
+    //   updateUser: {
+    //     updateUser,
+    //   },
+    // });
   } catch (error) {
     res.status(401).json({ error: error });
   }
+};
+
+exports.updatePassword = async (req, res) => {
+  let user = await User.findById(req.user._id);
+  if (!req.body.password) {
+    res.status(400).json({ message: "Please Provide Valid Password" });
+  }
+  if (!user.correctPassword(req.body.confirmPassword, user.password)) {
+    res.status(400).json({ message: "invalid password" });
+  }
+
+  user.confirmpassword = req.body.confirmPassword;
+  user.password = req.body.password;
+  await user.save({ validateBeforeSave: false });
+
+  const token = gentoken(user._id, user, res);
+  res.status(200).json({
+    token: token,
+    user: {
+      user,
+    },
+  });
 };
