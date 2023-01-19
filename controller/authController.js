@@ -58,7 +58,7 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-    const token = gentoken(user._id);
+    const token = gentoken(user._id, user, res);
     const correct = await user.correctPassword(password, user.password);
 
     if (!user || !correct) {

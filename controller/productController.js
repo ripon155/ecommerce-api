@@ -4,8 +4,10 @@ const fs = require("fs");
 exports.createProduct = async (req, res) => {
   try {
     //    console.log(req.file);
-    req.body.image = req.file.filename;
-    req.body.imgUrl = "http://127.0.0.1:5000/" + req.file.path;
+    if (req.body.image) {
+      req.body.image = req.file.filename;
+      req.body.imgUrl = "http://127.0.0.1:5000/" + req.file.path;
+    }
 
     //    console.log(req.file.path);
     const product = await Product.create(req.body);
@@ -24,8 +26,8 @@ exports.createProduct = async (req, res) => {
 exports.getAllProduct = async (req, res) => {
   try {
     // console.log(req.query.sort.split(",").join(" "));
-    console.log(req.query.select);
-    let query = Product.find().populate("brandId");
+    // console.log(req.query.select);
+    let query = Product.find().select(-__v);
 
     if (req.query.sort) {
       const sortBy = req.query.sort.split(",").join(" ");
@@ -53,7 +55,7 @@ exports.getAllProduct = async (req, res) => {
 
 exports.getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).populate("brandId");
+    const product = await Product.findById(req.params.id);
     if (product.length == 0) {
       res.status(400).json({
         status: "product not available",
