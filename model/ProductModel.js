@@ -6,14 +6,18 @@ const productSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, "Product must have a name"],
+      index: true,
     },
     price: {
       type: Number,
       required: [true, "product must have a price"],
     },
-    ratting: {
+    rating: {
       type: Number,
-      default: 4.5,
+      // default: 4.5,
+    },
+    numRating: {
+      type: Number,
     },
     description: {
       type: String,
@@ -52,6 +56,7 @@ const productSchema = new mongoose.Schema(
   }
 );
 
+// users: Array
 // embedding
 // productSchema.pre("save", async function (next) {
 //   const user = this.users.map(async (id) => await User.findById(id));
@@ -74,6 +79,13 @@ productSchema.pre(/^find/, function (next) {
     select: "-__v ",
   });
   next();
+});
+
+//virtual populate
+productSchema.virtual("reviews", {
+  ref: "Review",
+  foreignField: "product",
+  localField: "_id",
 });
 
 const Product = mongoose.model("Product", productSchema);

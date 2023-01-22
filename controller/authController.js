@@ -9,7 +9,6 @@ const crypto = require("crypto");
 const { findOne } = require("../model/ProductModel");
 
 const gentoken = (id, user, res) => {
-  console.log("token");
   const token = jwt.sign({ id: id }, "secrete", {
     expiresIn: process.env.JWTEXP_IN,
   });
@@ -36,7 +35,7 @@ exports.signup = async (req, res) => {
     const check = await User.find({ email: req.body.email });
     const newUser = await User.create(req.body);
     const token = jwt.sign({ id: newUser._id }, "secrete", {
-      expiresIn: "100h",
+      expiresIn: "100d",
     });
 
     res.status(201).json({
@@ -58,19 +57,16 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-    const token = gentoken(user._id, user, res);
-    const correct = await user.correctPassword(password, user.password);
-
+    console.log(req.body);
+    console.log(user);
+    const correct = user.correctPassword(password, user.password);
+    console.log(correct);
     if (!user || !correct) {
       res.status(401).json({
         message: "incorrect email or password",
       });
     }
-
-    res.status(200).json({
-      status: "login success",
-      token: token,
-    });
+    const token = gentoken(user._id, user, res);
   } catch (error) {
     res.status(400).json({
       status: "faild",
@@ -124,7 +120,7 @@ exports.forgetpassword = async (req, res) => {
 
     if (!user) {
       res.status(400).json({
-        message: "User not found !",
+        message: "No User  found !",
       });
     }
     const passToken = await user.passwordResetTokenGen(user);
@@ -146,8 +142,6 @@ exports.forgetpassword = async (req, res) => {
       "api/ecom/user/resetpasswordtoken/" +
       passToken;
 
-    const url = ``;
-
     const mailOptions = {
       from: '"Example Team" <from@example.com>',
       to: "user1@example.com, user2@example.com",
@@ -163,7 +157,7 @@ exports.forgetpassword = async (req, res) => {
     });
 
     res.status(200).json({
-      token: fullUrl,
+      link: fullUrl,
     });
   } catch (error) {
     res.status(400).json({
@@ -174,13 +168,12 @@ exports.forgetpassword = async (req, res) => {
 
 exports.reserPassword = async (req, res) => {
   const passwordToken = req.params.token;
-  console.log(passwordToken);
+
   try {
     const reqTokenCheck = crypto
       .createHash("sha256")
       .update(req.params.token)
       .digest("hex");
-    console.log(reqTokenCheck);
 
     const user = await User.findOne({
       passwordResetToken: reqTokenCheck,
@@ -198,16 +191,7 @@ exports.reserPassword = async (req, res) => {
 
     const updateUser = await user.save();
 
-    // const token = gentoken(updateUser._id);
     const token = gentoken(updateUser._id, updateUser, res);
-
-    // res.status(201).json({
-    //   message: "success",
-    //   token: token,
-    //   updateUser: {
-    //     updateUser,
-    //   },
-    // });
   } catch (error) {
     res.status(401).json({ error: error });
   }
@@ -227,10 +211,4 @@ exports.updatePassword = async (req, res) => {
   await user.save({ validateBeforeSave: false });
 
   const token = gentoken(user._id, user, res);
-  res.status(200).json({
-    token: token,
-    user: {
-      user,
-    },
-  });
 };

@@ -2,9 +2,11 @@ const express = require("express");
 const multer = require("multer");
 const productController = require("./../controller/productController");
 const authController = require("./../controller/authController");
+const reviewRouter = require("./../routes/reviewRouter");
+const imgesConf = require("./../utils/imageUpload");
 
 const { protectRoute, restricTo } = authController;
-
+// const { createReview } = reviewController;
 const router = express.Router();
 
 const {
@@ -13,26 +15,22 @@ const {
   getProductById,
   updateProduct,
   deleteProduct,
+  imageResize,
 } = productController;
 
-// image upload start
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "public/image/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.originalname);
-  },
-});
-const upload = multer({ storage: storage });
+const { imageUpload, resizeImage } = imgesConf;
 
 // image upload end
 //protectRoute,
+
+// nestedroute
+// router.route("/:productId/reviews").post(protectRoute, createReview);
+router.use("/:productId/reviews", reviewRouter);
+
 router
   .route("/")
   .get(protectRoute, restricTo("admin", "superadmin", "user"), getAllProduct)
-  .post(upload.single("image"), createProduct);
+  .post(protectRoute, imageUpload, resizeImage, createProduct);
 router
   .route("/:id")
   .get(getProductById)

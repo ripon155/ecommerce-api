@@ -11,6 +11,9 @@ const reviewRouter = require("./routes/reviewRouter");
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cookieParser());
+// app.use(express.static("/public"));
+// app.use("/", express.static(path.join(__dirname, "/public")));
+app.use("/public", express.static("public"));
 
 app.use("/api/ecom/products", productRouter);
 app.use("/api/ecom/brand", brandrouter);
