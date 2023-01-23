@@ -36,3 +36,15 @@ exports.resizeImage = (req, res, next) => {
     .toFile(`public/image/${req.file.filename}`);
   next();
 };
+
+//if we upload single image
+// upload.single("image"); req.file
+
+//if we upload multiple image
+// upload.array("image", 5); req.files
+
+//if we upload multiple and single image same time
+// upload.fields([
+//   { name: "imageField1", maxCount: 10 },
+//   { name: "imageField2", maxCount: 1 },
+// ]); req.files

@@ -23,13 +23,8 @@ const productSchema = new mongoose.Schema(
       type: String,
       // required: [true, 'product must have a description']
     },
-    image: {
-      type: String,
-      // required: [true, "product must have a image"],
-    },
-    imgUrl: {
-      type: String,
-    },
+    image: [String],
+    imgUrl: [String],
     brandName: {
       type: String,
     },

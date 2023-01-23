@@ -90,7 +90,9 @@ exports.deleteDoc = (Model) => async (req, res) => {
   const doc = await Model.findOne({ _id: req.params.id });
   console.log(doc.image);
   if (doc.image) {
-    await fs.unlinkSync(`public/image/${doc.image}`);
+    doc.image.forEach(async (im) => {
+      await fs.unlinkSync(`public/image/products/${im}`);
+    });
   }
 
   if (!doc) {

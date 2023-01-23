@@ -10,11 +10,11 @@ exports.createProduct = async (req, res) => {
     // console.log(req.file);
     // console.log(req.file);
     // http://127.0.0.1:5000/public/image/1672216273188-736195259-n8.jpg
-    if (req.file) {
-      req.body.image = req.file.filename;
-      req.body.imgUrl =
-        "http://127.0.0.1:5000/public/image/" + req.file.filename;
-    }
+    // if (req.file) {
+    //   req.body.image = req.file.filename;
+    //   req.body.imgUrl =
+    //     "http://127.0.0.1:5000/public/image/" + req.file.filename;
+    // }
 
     //    console.log(req.file.path);
     const product = await Product.create(req.body);
