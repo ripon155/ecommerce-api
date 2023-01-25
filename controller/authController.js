@@ -7,6 +7,8 @@ const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const { findOne } = require("../model/ProductModel");
+// const sendEmail = require("./../utils/sendEmail");
+const Email = require("./../utils/sendEmail");
 
 const gentoken = (id, user, res) => {
   const token = jwt.sign({ id: id }, "secrete", {
@@ -125,39 +127,24 @@ exports.forgetpassword = async (req, res) => {
     }
     const passToken = await user.passwordResetTokenGen(user);
     await user.save({ validateBeforeSave: false });
-
-    const transport = nodemailer.createTransport({
-      host: "smtp.mailtrap.io",
-      port: 2525,
-      auth: {
-        user: "1d419918c93f55",
-        pass: "c6feaabd48bad1",
-      },
-    });
-
-    const fullUrl =
+    const fullUrl1 =
       req.protocol +
       "://" +
       req.get("host") +
       "api/ecom/user/resetpasswordtoken/" +
       passToken;
 
-    const mailOptions = {
-      from: '"Example Team" <from@example.com>',
-      to: "user1@example.com, user2@example.com",
-      subject: "Nice Nodemailer test",
-      text: fullUrl,
-    };
+    const options = {};
+    options.fullUrl = fullUrl1;
+    options.email = user.email;
 
-    transport.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        return console.log(error);
-      }
-      console.log("Message sent: %s", info.messageId);
-    });
+    user.url = fullUrl1;
+    await new Email(user, fullUrl1).sendWelcome();
+
+    // sendEmail(options);
 
     res.status(200).json({
-      link: fullUrl,
+      link: fullUrl1,
     });
   } catch (error) {
     res.status(400).json({

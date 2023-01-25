@@ -7,6 +7,7 @@ const productRouter = require("./routes/productRouter");
 const brandrouter = require("./routes/brandeRouter");
 const userRouter = require("./routes/userRouter");
 const reviewRouter = require("./routes/reviewRouter");
+const productBuyRouter = require("./routes/productBuyRouter");
 
 app.use(morgan("dev"));
 app.use(express.json());
@@ -19,5 +20,6 @@ app.use("/api/ecom/products", productRouter);
 app.use("/api/ecom/brand", brandrouter);
 app.use("/api/ecom/user", userRouter);
 app.use("/api/ecom/review", reviewRouter);
+app.use("/api/ecom/productcheckout", productBuyRouter);
 
 module.exports = app;
