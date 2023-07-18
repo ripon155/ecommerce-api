@@ -2,13 +2,15 @@ const express = require("express");
 const app = express();
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
-
+const cors = require("cors");
 const productRouter = require("./routes/productRouter");
 const brandrouter = require("./routes/brandeRouter");
 const userRouter = require("./routes/userRouter");
 const reviewRouter = require("./routes/reviewRouter");
 const productBuyRouter = require("./routes/productBuyRouter");
 
+// cors for cprs origin block
+app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cookieParser());

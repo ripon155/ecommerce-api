@@ -1,7 +1,7 @@
-// const stripe = require("stripe")(process.env.STRIPE_SECRETE_KEY);
-const stripe = require("stripe")(
-  "sk_test_51MU9I7JDs8qLOl2jLFW33J3G4WEiXrofOfu5PfVt74FtVD9OBv3GUYR4pZBlCzXzC4ls0Y1RYDXjO6IfwMPvEvYG00As8YH6rF"
-);
+const stripe = require("stripe")(process.env.STRIPE_SECRETE_KEY);
+// const stripe = require("stripe")(
+//   "sk_test_51MU9I7JDs8qLOl2jLFW33J3G4WEiXrofOfu5PfVt74FtVD9OBv3GUYR4pZBlCzXzC4ls0Y1RYDXjO6IfwMPvEvYG00As8YH6rF"
+// );
 const Product = require("./../model/ProductModel");
 const factoey = require("./handlerfactory");
 exports.getCheckoutSession = async (req, res, next) => {
@@ -40,7 +40,6 @@ exports.getCheckoutSession = async (req, res, next) => {
   }
 };
 
-// createCheckoutSession();
 {
   /* <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
 <stripe-pricing-table pricing-table-id="prctbl_1MXrB6JDs8qLOl2j2n4emAfg"

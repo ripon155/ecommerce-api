@@ -16,7 +16,7 @@ exports.createProduct = async (req, res) => {
     //     "http://127.0.0.1:5000/public/image/" + req.file.filename;
     // }
 
-    //    console.log(req.file.path);
+    req.body.users = req.user._id;
     const product = await Product.create(req.body);
     res.status(201).json({
       status: "Successfully added product",

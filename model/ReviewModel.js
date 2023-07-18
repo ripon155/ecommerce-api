@@ -33,7 +33,7 @@ const reviewSchema = new mongoose.Schema(
 reviewSchema.pre(/^find/, function (next) {
   this.populate({
     path: "user",
-    select: "name",
+    select: "name ",
   });
   next();
 });
@@ -51,6 +51,8 @@ reviewSchema.statics.calcAverage = async function (productId) {
       },
     },
   ]);
+
+  // when create reviw this method update product model
   await Product.findByIdAndUpdate(productId, {
     rating: stass[0].avgRating,
     numRating: stass[0].nRating,

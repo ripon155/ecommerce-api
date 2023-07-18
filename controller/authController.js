@@ -80,6 +80,7 @@ exports.login = async (req, res) => {
 exports.protectRoute = async (req, res, next) => {
   try {
     let token;
+
     if (req.headers.authorization) {
       token = req.headers.authorization.split(" ")[1]; // && req.headers.authorization.startwith("Barear")
 

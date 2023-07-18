@@ -27,13 +27,17 @@ exports.resizeImage = (req, res, next) => {
   if (!req.file) return next();
 
   const uniqueSuffix = Date.now() + "_" + Math.round(Math.random() * 1e9);
-  req.file.filename = uniqueSuffix + "_" + req.user.id + ".jpeg";
+  // const fileName = uniqueSuffix + "_" + req.user.id + ".jpeg";
+  const fileName = uniqueSuffix + ".jpeg";
+  const imUrl = `http://127.0.0.1:5000/public/image/products/${fileName}`;
+  req.body.image = fileName;
+  req.body.imgUrl = imUrl;
 
   sharp(req.file.buffer)
     .resize(500, 500)
     .toFormat("jpeg")
     .jpeg({ quality: 90 })
-    .toFile(`public/image/${req.file.filename}`);
+    .toFile(`public/image/products/${fileName}`);
   next();
 };
 
